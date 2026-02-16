@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Courchevel 1850 — Slippery Sliders 🎿</title>
+<meta name="description" content="Courchevel 1850 Ski Trip — 25 Feb – 2 Mar 2026">
+<meta property="og:title" content="Courchevel 1850 — Slippery Sliders 🎿">
+<meta property="og:description" content="Ski trip 25 Feb – 2 Mar 2026 • Les 3 Vallées, French Alps">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏔️</text></svg>">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 30%, #2c5364 70%, #0f2027 100%);
+    font-family: 'Segoe UI', 'Helvetica Neue', -apple-system, sans-serif;
+    color: #fff;
+    overflow-x: hidden;
+  }
+  /* Snow */
+  .snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+  .snowflake { position: absolute; top: -10px; background: #fff; border-radius: 50%; animation: snowfall linear infinite; }
+  @keyframes snowfall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
+  /* Layout */
+  .container { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; padding: 20px 16px 40px; }
+  /* Header */
+  .header { text-align: center; margin-bottom: 24px; }
+  .header-icon { font-size: 48px; margin-bottom: 8px; }
+  .header h1 { color: #fff; font-size: 32px; font-weight: 800; font-family: Georgia, serif; letter-spacing: 1px; text-shadow: 0 2px 20px rgba(0,0,0,0.3); }
+  .header-date { color: rgba(255,255,255,0.6); font-size: 14px; letter-spacing: 3px; margin-top: 4px; }
+  .header-badge { margin-top: 8px; display: inline-block; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 4px 16px; font-size: 13px; color: rgba(255,255,255,0.8); }
+  /* Countdown */
+  .countdown { display: flex; justify-content: center; gap: 16px; padding: 20px 0; }
+  .countdown-box { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 14px 18px; min-width: 70px; text-align: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .countdown-num { font-size: 32px; font-weight: 800; color: #fff; font-family: Georgia, serif; }
+  .countdown-label { font-size: 11px; color: rgba(255,255,255,0.7); letter-spacing: 2px; margin-top: 4px; }
+  .countdown-done { text-align: center; padding: 20px; font-size: 28px; font-weight: 700; color: #fff; }
+  /* Tabs */
+  .tabs { display: flex; gap: 6px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
+  .tab-btn { flex: 1; padding: 10px 8px; border-radius: 12px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); transition: all 0.2s; white-space: nowrap; }
+  .tab-btn.active { background: rgba(255,255,255,0.2); color: #fff; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  /* Sections / Accordions */
+  .section { margin-bottom: 16px; border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.12); }
+  .section-header { width: 100%; padding: 16px 20px; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: #fff; font-size: 18px; font-weight: 700; font-family: Georgia, serif; text-align: left; }
+  .section-arrow { transition: transform 0.3s; font-size: 14px; }
+  .section-arrow.open { transform: rotate(180deg); }
+  .section-body { padding: 0 20px 20px; display: none; }
+  .section-body.open { display: block; }
+  /* Itinerary items */
+  .itin-item { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); font-size: 14px; line-height: 1.5; }
+  .itin-item:last-child { border-bottom: none; }
+  .lunch-tag { background: rgba(255,180,0,0.2); border-radius: 6px; padding: 2px 8px; color: #ffd54f; font-weight: 600; }
+  /* Crew */
+  .crew-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .crew-card { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+  .crew-emoji { font-size: 40px; margin-bottom: 8px; }
+  .crew-name { color: #fff; font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+  .crew-flights { color: rgba(255,255,255,0.5); font-size: 11px; line-height: 1.4; }
+  .crew-status { margin-top: 8px; }
+  .status-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .status-confirmed { background: rgba(76,175,80,0.2); color: #81c784; }
+  .status-pending { background: rgba(255,152,0,0.2); color: #ffb74d; }
+  .crew-memories { margin-top: 16px; background: rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; text-align: center; }
+  .crew-memories-icon { font-size: 24px; margin-bottom: 8px; }
+  .crew-memories-text { color: rgba(255,255,255,0.7); font-size: 13px; }
+  /* Bookings */
+  .booking-details { color: rgba(255,255,255,0.8); font-size: 13px; line-height: 1.6; white-space: pre-wrap; font-family: 'Segoe UI', sans-serif; }
+  .seats-label { color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+  .seats-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .seats-table th { padding: 6px 8px; color: rgba(255,255,255,0.5); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.15); }
+  .seats-table th:first-child { text-align: left; }
+  .seats-table th { text-align: center; }
+  .seats-table td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .seats-table td:first-child { color: #fff; font-weight: 600; text-align: left; }
+  .seats-table td { color: rgba(255,255,255,0.8); text-align: center; font-family: monospace; }
+  .eticket-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .eticket-row:last-child { border-bottom: none; }
+  .eticket-name { color: #fff; font-weight: 600; }
+  .eticket-num { color: rgba(255,255,255,0.7); font-family: monospace; }
+  /* Packing */
+  .packing-hint { color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 12px; text-align: center; }
+  .packing-item { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .packing-item:last-child { border-bottom: none; }
+  .packing-check { width: 22px; height: 22px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.3); background: transparent; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #81c784; flex-shrink: 0; transition: all 0.2s; }
+  .packing-check.checked { border-color: #81c784; background: rgba(76,175,80,0.2); }
+  .packing-text { color: rgba(255,255,255,0.85); font-size: 14px; transition: all 0.2s; }
+  .packing-text.checked { color: rgba(255,255,255,0.4); text-decoration: line-through; }
+  /* Footer */
+  .footer { text-align: center; margin-top: 32px; color: rgba(255,255,255,0.3); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- Snow -->
+<div class="snow-container" id="snow"></div>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon">🏔️</div>
+    <h1>COURCHEVEL 1850</h1>
+    <div class="header-date">25 FEB — 2 MAR 2026</div>
+    <div class="header-badge">🇫🇷 Les 3 Vallées, French Alps</div>
+  </div>
+
+  <!-- Countdown -->
+  <div id="countdown"></div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="itinerary">📅 Itinerary</button>
+    <button class="tab-btn" data-tab="crew">👥 Crew</button>
+    <button class="tab-btn" data-tab="bookings">📋 Bookings</button>
+    <button class="tab-btn" data-tab="packing">🎒 Packing</button>
+  </div>
+
+  <!-- Itinerary Tab -->
+  <div class="tab-content active" id="tab-itinerary"></div>
+
+  <!-- Crew Tab -->
+  <div class="tab-content" id="tab-crew"></div>
+
+  <!-- Bookings Tab -->
+  <div class="tab-content" id="tab-bookings"></div>
+
+  <!-- Packing Tab -->
+  <div class="tab-content" id="tab-packing"></div>
+
+  <!-- Footer -->
+  <div class="footer">🏔️ Courchevel 2026 • Let's send it! 🎿</div>
+</div>
+
+<script>
+// ─── DATA ───
+const TRIP_DATE = new Date("2026-02-25T20:15:00+02:00");
+
+const CREW = [
+  {name:"Daniel",emoji:"🎿",flights:"Swiss LX 283/2802",status:"confirmed"},
+  {name:"Paul",emoji:"⛷️",flights:"Swiss LX 283/2802",status:"confirmed"},
+  {name:"Shannon",emoji:"🏂",flights:"Swiss LX 283/2802",status:"confirmed"},
+  {name:"Steve",emoji:"🎿",flights:"Swiss LX 283/2802",status:"confirmed"},
+  {name:"Matt",emoji:"⛷️",flights:"Arriving late Fri 27th",status:"flight details pending"},
+  {name:"James (Jimmy)",emoji:"🏂",flights:"Meeting in Geneva",status:"flight details pending"},
+];
+
+const ITINERARY = [
+  {day:"Wed 25 Feb",title:"Departure Day ✈️",items:["20:15 — Depart JNB on LX 283 (Business)","Overnight flight to Zurich"],open:true},
+  {day:"Thu 26 Feb",title:"Arrival Day 🏔️",items:["06:10 — Land in Zurich","07:30 — Connect LX 2802 to Geneva","08:25 — Arrive Geneva","Jimmy meets the group in Geneva","09:45 — Transfer pick-up from Geneva Airport","~12:55 — Arrive Courchevel 1850","16:00 — Hotel check-in","Evening: Settle in & explore the resort"],open:true},
+  {day:"Fri 27 Feb",title:"Day 2 on the Slopes ⛷️",items:["09:00–11:00 — Daniel's private ski lesson (New Generation)","Free skiing for the crew","Matt arrives late evening"]},
+  {day:"Sat 28 Feb",title:"Full Send Saturday 🎿",items:["Full day skiing","LUNCH — Bagatelle 🍽️"]},
+  {day:"Sun 1 Mar",title:"Sunday Shred 🏂",items:["Full day skiing","LUNCH — BAIES 🍽️"]},
+  {day:"Mon 2 Mar",title:"Last Runs & Departure 🛫",items:["Morning skiing — last runs!","10:50 — Transfer pick-up from Courchevel","~14:00 — Arrive Geneva Airport","19:00 — LX 2817 Geneva → Zurich","22:40 — LX 282 Zurich → JNB (Business)"]},
+  {day:"Tue 3 Mar",title:"Home 🏠",items:["10:30 — Land in JNB"]},
+];
+
+const BOOKINGS = [
+  {title:"Flights (Daniel, Paul, Shannon, Steve)",icon:"✈️",open:true,
+    details:"Swiss International Air Lines — Business Class\nBooking Ref: 8VFHHV\n\nOutbound:\n• LX 283: JNB 20:15 → Zurich 06:10\n• LX 2802: Zurich 07:30 → Geneva 08:25\n\nReturn:\n• LX 2817: Geneva 19:00 → Zurich 19:55\n• LX 282: Zurich 22:40 → JNB 10:30+1",
+    seats:[
+      {name:"Daniel",s:["10G","07A","07A","11G"],ticket:"LX 724-5073940216"},
+      {name:"Paul",s:["10D","07C","06C","11D"],ticket:"LX 724-5073940219"},
+      {name:"Shannon",s:["09D","06D","04C","10D"],ticket:"LX 724-5073940217"},
+      {name:"Steve",s:["09G","06F","05A","10G"],ticket:"LX 724-5073940218"}
+    ]},
+  {title:"Ski Lesson (Daniel)",icon:"🎿",details:"New Generation Ski School — Private Lesson\nFriday 27 Feb, 09:00–11:00\nBooking Ref: 682142\nCost: €299.60 (paid)\nMeeting Point: Courchevel 1850\nResort Contact: +33 (0)4 79 01 03 18"},
+  {title:"Accommodation",icon:"🏨",details:"Les 3 Vallées, a Beaumier hotel\nRue Park City, Courchevel 1850, 73120 France\n\nExpedia Itinerary: 72070500331395\nReserved for: Shannon Brenner\nRooms: 4 × Comfort Room\n\nCheck-in: Thu 26 Feb from 4:00 PM\nCheck-out: Mon 2 Mar by 11:00 AM\n\nGuests: 6 adults"},
+  {title:"Airport Transfers",icon:"🚐",details:"Private Door to Door Transfer — Premium Minivan\nBooking Ref: A2A296223\n\nOutbound:\nGeneva Airport → Courchevel 1850 3 Valleys\nPick-up: 26/02/2026 at 09:45\nEst. Arrival: 26/02/2026 at 12:55\n5 Adults — €406.13\n\nReturn:\nCourchevel 1850 3 Valleys → Geneva Airport\nPick-up: 02/03/2026 at 10:50\nEst. Arrival: 02/03/2026 at 14:00\n5 Adults — €406.13\n\nTotal: €812.26"},
+  {title:"Ski Passes",icon:"🎫",details:"TBC — To be booked"},
+  {title:"Lunches",icon:"🍽️",details:"Sat 28 Feb — Bagatelle\nSun 1 Mar — BAIES"},
+];
+
+const PACKING = [
+  {cat:"Ski Gear",items:["Ski jacket & pants","Base layers (thermal tops & bottoms)","Ski socks (3+ pairs)","Ski gloves / mittens","Helmet","Goggles","Neck gaiter / balaclava","Ski boots (or rent there)"]},
+  {cat:"Clothing",items:["Warm casual wear for evenings","Waterproof boots / après-ski boots","Beanie / warm hat","Sunglasses","Swimwear (if hotel has pool/spa)"]},
+  {cat:"Essentials",items:["Passport","Travel insurance docs","Euros (cash)","Credit/debit cards","Phone charger & adapter (EU Type C)","Sunscreen (SPF 50+ for altitude)","Lip balm with SPF","Hand warmers","Camera"]},
+  {cat:"Nice to Have",items:["Hip flask 🥃","Bluetooth speaker","Card games","Snacks for the flight"]},
+];
+
+// ─── SNOW ───
+(function createSnow() {
+  const container = document.getElementById('snow');
+  for (let i = 0; i < 40; i++) {
+    const flake = document.createElement('div');
+    flake.className = 'snowflake';
+    const size = 2 + Math.random() * 4;
+    flake.style.left = Math.random() * 100 + '%';
+    flake.style.width = size + 'px';
+    flake.style.height = size + 'px';
+    flake.style.opacity = 0.3 + Math.random() * 0.5;
+    flake.style.animationDuration = (4 + Math.random() * 6) + 's';
+    flake.style.animationDelay = (Math.random() * 8) + 's';
+    container.appendChild(flake);
+  }
+})();
+
+// ─── COUNTDOWN ───
+function updateCountdown() {
+  const el = document.getElementById('countdown');
+  const now = new Date();
+  const diff = Math.max(0, TRIP_DATE - now);
+  if (diff <= 0) {
+    el.innerHTML = '<div class="countdown-done">SLIPPERY SLIDERS 🎿⛷️🏔️</div>';
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  const units = [{v:d,l:"DAYS"},{v:h,l:"HRS"},{v:m,l:"MIN"},{v:s,l:"SEC"}];
+  el.innerHTML = '<div class="countdown">' + units.map(u =>
+    `<div class="countdown-box"><div class="countdown-num">${String(u.v).padStart(2,'0')}</div><div class="countdown-label">${u.l}</div></div>`
+  ).join('') + '</div>';
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// ─── HELPERS ───
+function makeSection(title, content, isOpen) {
+  return `<div class="section">
+    <button class="section-header" onclick="this.nextElementSibling.classList.toggle('open'); this.querySelector('.section-arrow').classList.toggle('open')">
+      <span>${title}</span>
+      <span class="section-arrow${isOpen ? ' open' : ''}">▼</span>
+    </button>
+    <div class="section-body${isOpen ? ' open' : ''}">${content}</div>
+  </div>`;
+}
+
+// ─── TABS ───
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ─── RENDER ITINERARY ───
+document.getElementById('tab-itinerary').innerHTML = ITINERARY.map(day => {
+  const items = day.items.map(item => {
+    const inner = item.includes('LUNCH') ? `<span class="lunch-tag">${item}</span>` : item;
+    return `<div class="itin-item">${inner}</div>`;
+  }).join('');
+  return makeSection(`${day.day} — ${day.title}`, items, !!day.open);
+}).join('');
+
+// ─── RENDER CREW ───
+document.getElementById('tab-crew').innerHTML = `
+  <div class="crew-grid">
+    ${CREW.map(c => `
+      <div class="crew-card">
+        <div class="crew-emoji">${c.emoji}</div>
+        <div class="crew-name">${c.name}</div>
+        <div class="crew-flights">${c.flights}</div>
+        <div class="crew-status">
+          <span class="status-badge ${c.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+            ${c.status === 'confirmed' ? '✓ Confirmed' : '✈️ Flight Details Pending'}
+          </span>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+  <div class="crew-memories">
+    <div class="crew-memories-icon">📸</div>
+    <div class="crew-memories-text">Memories from our last trip together — here's to making more! 🍻</div>
+  </div>`;
+
+// ─── RENDER BOOKINGS ───
+document.getElementById('tab-bookings').innerHTML = BOOKINGS.map(b => {
+  let content = `<div class="booking-details">${b.details}</div>`;
+  if (b.seats) {
+    content += `
+      <div style="margin-top:16px">
+        <div class="seats-label">SEATS</div>
+        <div style="overflow-x:auto">
+          <table class="seats-table">
+            <thead><tr><th></th><th>LX283</th><th>LX2802</th><th>LX2817</th><th>LX282</th></tr></thead>
+            <tbody>${b.seats.map(p =>
+              `<tr><td>${p.name}</td>${p.s.map(s => `<td>${s}</td>`).join('')}</tr>`
+            ).join('')}</tbody>
+          </table>
+        </div>
+        <div class="seats-label" style="margin-top:16px">E-TICKETS</div>
+        ${b.seats.map(p =>
+          `<div class="eticket-row"><span class="eticket-name">${p.name}</span><span class="eticket-num">${p.ticket}</span></div>`
+        ).join('')}
+      </div>`;
+  }
+  return makeSection(`${b.icon} ${b.title}`, content, !!b.open);
+}).join('');
+
+// ─── RENDER PACKING ───
+const checkedItems = {};
+function renderPacking() {
+  document.getElementById('tab-packing').innerHTML =
+    '<div class="packing-hint">Tap items to check them off ✓</div>' +
+    PACKING.map((cat, ci) => {
+      const items = cat.items.map((item, ii) => {
+        const key = `${ci}-${ii}`;
+        const checked = checkedItems[key];
+        return `<div class="packing-item" data-key="${key}">
+          <div class="packing-check${checked ? ' checked' : ''}">${checked ? '✓' : ''}</div>
+          <span class="packing-text${checked ? ' checked' : ''}">${item}</span>
+        </div>`;
+      }).join('');
+      return makeSection(cat.cat, items, ci === 0);
+    }).join('');
+
+  document.querySelectorAll('.packing-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = el.dataset.key;
+      checkedItems[key] = !checkedItems[key];
+      const check = el.querySelector('.packing-check');
+      const text = el.querySelector('.packing-text');
+      check.classList.toggle('checked');
+      check.textContent = checkedItems[key] ? '✓' : '';
+      text.classList.toggle('checked');
+    });
+  });
+}
+renderPacking();
+</script>
+</body>
+</html>
