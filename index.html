@@ -236,7 +236,7 @@ function updateCountdown() {
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const s = Math.floor((diff % 60000) / 1000);
-  const units = [{v:d,l:"DAYS"},{v:h,l:"HRS"},{v:m,l:"MIN"},{v:s,l:"SEC"}];
+  const units = [{v:d,l:"SLEEPS"},{v:h,l:"HRS"},{v:m,l:"MIN"},{v:s,l:"SEC"}];
   el.innerHTML = '<div class="countdown">' + units.map(u =>
     `<div class="countdown-box"><div class="countdown-num">${String(u.v).padStart(2,'0')}</div><div class="countdown-label">${u.l}</div></div>`
   ).join('') + '</div>';
