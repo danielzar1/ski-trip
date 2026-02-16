@@ -90,6 +90,27 @@
   .packing-check.checked { border-color: #81c784; background: rgba(76,175,80,0.2); }
   .packing-text { color: rgba(255,255,255,0.85); font-size: 14px; transition: all 0.2s; }
   .packing-text.checked { color: rgba(255,255,255,0.4); text-decoration: line-through; }
+  /* Snow Report */
+  .snow-report-loading { text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.6); font-size: 14px; }
+  .snow-report-loading .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .snow-report-error { text-align: center; padding: 40px 20px; color: rgba(255,152,0,0.8); font-size: 14px; }
+  .snow-current { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .snow-stat { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+  .snow-stat-icon { font-size: 28px; margin-bottom: 6px; }
+  .snow-stat-value { font-size: 28px; font-weight: 800; color: #fff; font-family: Georgia, serif; }
+  .snow-stat-unit { font-size: 13px; color: rgba(255,255,255,0.5); margin-left: 2px; }
+  .snow-stat-label { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 1px; margin-top: 4px; }
+  .snow-forecast { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .snow-forecast-day { flex: 0 0 auto; min-width: 90px; background: rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+  .snow-forecast-day.trip-day { border-color: rgba(100,181,246,0.4); background: rgba(100,181,246,0.1); }
+  .snow-forecast-date { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 1px; margin-bottom: 6px; }
+  .snow-forecast-icon { font-size: 22px; margin-bottom: 4px; }
+  .snow-forecast-snow { font-size: 16px; font-weight: 700; color: #fff; }
+  .snow-forecast-temp { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+  .snow-forecast-label { font-size: 9px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .snow-updated { text-align: center; color: rgba(255,255,255,0.3); font-size: 11px; margin-top: 16px; }
+  .trip-badge { display: inline-block; background: rgba(100,181,246,0.2); color: #90caf9; font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 6px; letter-spacing: 0.5px; margin-top: 4px; }
   /* Footer */
   .footer { text-align: center; margin-top: 32px; color: rgba(255,255,255,0.3); font-size: 12px; }
 </style>
@@ -116,6 +137,7 @@
     <button class="tab-btn active" data-tab="itinerary">📅 Itinerary</button>
     <button class="tab-btn" data-tab="crew">👥 Crew</button>
     <button class="tab-btn" data-tab="bookings">📋 Bookings</button>
+    <button class="tab-btn" data-tab="snow">🌨️ Snow</button>
     <button class="tab-btn" data-tab="packing">🎒 Packing</button>
   </div>
 
@@ -127,6 +149,9 @@
 
   <!-- Bookings Tab -->
   <div class="tab-content" id="tab-bookings"></div>
+
+  <!-- Snow Report Tab -->
+  <div class="tab-content" id="tab-snow"></div>
 
   <!-- Packing Tab -->
   <div class="tab-content" id="tab-packing"></div>
@@ -293,6 +318,141 @@ document.getElementById('tab-bookings').innerHTML = BOOKINGS.map(b => {
   }
   return makeSection(`${b.icon} ${b.title}`, content, !!b.open);
 }).join('');
+
+// ─── RENDER SNOW REPORT ───
+(async function renderSnowReport() {
+  const el = document.getElementById('tab-snow');
+  el.innerHTML = '<div class="snow-report-loading"><div class="spinner"></div><br>Loading snow report...</div>';
+
+  // Courchevel 1850 coordinates & altitude
+  const LAT = 45.4153, LON = 6.6347, ALT = 1850;
+  // Trip dates for highlighting
+  const TRIP_START = '2026-02-25', TRIP_END = '2026-03-02';
+
+  // Weather code to emoji/description
+  function weatherInfo(code) {
+    const map = {
+      0:['☀️','Clear'],1:['🌤️','Mostly Clear'],2:['⛅','Partly Cloudy'],3:['☁️','Overcast'],
+      45:['🌫️','Foggy'],48:['🌫️','Rime Fog'],
+      51:['🌧️','Light Drizzle'],53:['🌧️','Drizzle'],55:['🌧️','Heavy Drizzle'],
+      56:['🌧️','Freezing Drizzle'],57:['🌧️','Heavy Freezing Drizzle'],
+      61:['🌧️','Light Rain'],63:['🌧️','Rain'],65:['🌧️','Heavy Rain'],
+      66:['🌧️','Freezing Rain'],67:['🌧️','Heavy Freezing Rain'],
+      71:['🌨️','Light Snow'],73:['🌨️','Snow'],75:['❄️','Heavy Snow'],
+      77:['❄️','Snow Grains'],80:['🌦️','Light Showers'],81:['🌦️','Showers'],82:['🌦️','Heavy Showers'],
+      85:['🌨️','Light Snow Showers'],86:['❄️','Heavy Snow Showers'],
+      95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm + Hail'],99:['⛈️','Thunderstorm + Heavy Hail']
+    };
+    return map[code] || ['🌤️','Unknown'];
+  }
+
+  function formatDay(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
+  }
+
+  function isTripDay(dateStr) {
+    return dateStr >= TRIP_START && dateStr <= TRIP_END;
+  }
+
+  try {
+    // Fetch current conditions + 7-day forecast from Open-Meteo
+    const currentUrl = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,snow_depth&daily=weather_code,temperature_2m_max,temperature_2m_min,snowfall_sum,precipitation_probability_max&timezone=Europe/Paris&forecast_days=14&elevation=${ALT}`;
+
+    const resp = await fetch(currentUrl);
+    if (!resp.ok) throw new Error('API request failed');
+    const data = await resp.json();
+
+    const cur = data.current;
+    const daily = data.daily;
+    const [wxEmoji, wxDesc] = weatherInfo(cur.weather_code);
+
+    // Current conditions
+    let html = `
+      <div class="section" style="border-color: rgba(100,181,246,0.3);">
+        <div style="padding: 20px; text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 4px;">${wxEmoji}</div>
+          <div style="font-size: 18px; font-weight: 700; font-family: Georgia, serif; margin-bottom: 2px;">${wxDesc}</div>
+          <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Courchevel 1850m — Right Now</div>
+        </div>
+      </div>
+      <div class="snow-current">
+        <div class="snow-stat">
+          <div class="snow-stat-icon">🌡️</div>
+          <div class="snow-stat-value">${Math.round(cur.temperature_2m)}<span class="snow-stat-unit">°C</span></div>
+          <div class="snow-stat-label">TEMPERATURE</div>
+        </div>
+        <div class="snow-stat">
+          <div class="snow-stat-icon">❄️</div>
+          <div class="snow-stat-value">${cur.snow_depth != null ? Math.round(cur.snow_depth * 100) : '—'}<span class="snow-stat-unit">cm</span></div>
+          <div class="snow-stat-label">SNOW DEPTH</div>
+        </div>
+        <div class="snow-stat">
+          <div class="snow-stat-icon">💨</div>
+          <div class="snow-stat-value">${Math.round(cur.wind_speed_10m)}<span class="snow-stat-unit">km/h</span></div>
+          <div class="snow-stat-label">WIND</div>
+        </div>
+        <div class="snow-stat">
+          <div class="snow-stat-icon">💧</div>
+          <div class="snow-stat-value">${cur.relative_humidity_2m}<span class="snow-stat-unit">%</span></div>
+          <div class="snow-stat-label">HUMIDITY</div>
+        </div>
+      </div>`;
+
+    // 7-day forecast
+    html += `<div class="section">
+      <button class="section-header" onclick="this.nextElementSibling.classList.toggle('open'); this.querySelector('.section-arrow').classList.toggle('open')">
+        <span>14-Day Forecast</span>
+        <span class="section-arrow open">▼</span>
+      </button>
+      <div class="section-body open">
+        <div class="snow-forecast">`;
+
+    for (let i = 0; i < daily.time.length; i++) {
+      const date = daily.time[i];
+      const [dayEmoji] = weatherInfo(daily.weather_code[i]);
+      const tripDay = isTripDay(date);
+      html += `
+        <div class="snow-forecast-day${tripDay ? ' trip-day' : ''}">
+          <div class="snow-forecast-date">${formatDay(date)}</div>
+          <div class="snow-forecast-icon">${dayEmoji}</div>
+          <div class="snow-forecast-snow">${daily.snowfall_sum[i].toFixed(1)} cm</div>
+          <div class="snow-forecast-label">SNOWFALL</div>
+          <div class="snow-forecast-temp">${Math.round(daily.temperature_2m_min[i])}° / ${Math.round(daily.temperature_2m_max[i])}°</div>
+          ${tripDay ? '<div class="trip-badge">TRIP DAY</div>' : ''}
+        </div>`;
+    }
+
+    html += `</div></div></div>`;
+
+    // Total snowfall during trip period
+    let tripSnow = 0, tripDays = 0;
+    for (let i = 0; i < daily.time.length; i++) {
+      if (isTripDay(daily.time[i])) {
+        tripSnow += daily.snowfall_sum[i];
+        tripDays++;
+      }
+    }
+    if (tripDays > 0) {
+      html += `
+        <div class="section" style="border-color: rgba(100,181,246,0.3);">
+          <div style="padding: 20px; text-align: center;">
+            <div style="font-size: 28px; margin-bottom: 4px;">🎿</div>
+            <div style="font-size: 14px; font-weight: 700; color: #90caf9;">Trip Week Forecast</div>
+            <div style="font-size: 32px; font-weight: 800; font-family: Georgia, serif; margin: 8px 0;">${tripSnow.toFixed(1)} cm</div>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Expected snowfall during your trip</div>
+          </div>
+        </div>`;
+    }
+
+    const now = new Date();
+    html += `<div class="snow-updated">Last updated: ${now.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })} — Open-Meteo API</div>`;
+
+    el.innerHTML = html;
+  } catch (err) {
+    el.innerHTML = `<div class="snow-report-error">⚠️ Could not load snow report.<br><span style="font-size:12px; opacity:0.6;">${err.message}</span></div>`;
+  }
+})();
 
 // ─── RENDER PACKING ───
 const checkedItems = {};
